@@ -1,0 +1,15 @@
+.pallet-file-selector {
+  display: inline-block;
+
+  .upload-btn {
+    display: inline-block;
+  }
+
+  img {
+    cursor: pointer;
+    display: inline-block;
+    width: 8px;
+    height: 10px;
+    padding-left: 5px;
+  }
+}
