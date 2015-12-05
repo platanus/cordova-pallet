@@ -9,6 +9,7 @@ ngDescribe({
       'success-callback="setUploadData(uploadData)" ' +
       'progress-callback="setProgress(event)" ' +
       'error-callback="setError(errorData)" ' +
+      'remove-callback="onRemoveIdentifier()" ' +
       'upload-url="uploads" ' +
       'ng-model="user.uploadIdentifier">' +
     '</pallet-file-selector>',
@@ -33,6 +34,7 @@ ngDescribe({
             deps.parentScope.onInit = jasmine.createSpy('onInit');
             deps.parentScope.setUploadData = jasmine.createSpy('setUploadData');
             deps.parentScope.setProgress = jasmine.createSpy('setProgress');
+            deps.parentScope.onRemoveIdentifier = jasmine.createSpy('onRemoveIdentifier');
 
             deps.element.isolateScope().onUploadButtonClick();
             deps.$rootScope.$apply();
@@ -73,6 +75,32 @@ ngDescribe({
           it('sets upload identifier from response', function() {
             var scope = deps.element.scope();
             expect(scope.user.uploadIdentifier).toEqual('OjynOLMx2h');
+          });
+
+          it('shows remove button', function() {
+            var element = deps.element.find('img');
+            expect(element.hasClass('ng-hide')).toBe(false);
+          });
+
+          describe('clicking on remove button', function() {
+            beforeEach(function() {
+              deps.element.isolateScope().onRemoveUpload();
+            });
+
+            it('cleans identifier', function() {
+              var scope = deps.element.scope();
+              expect(scope.user.uploadIdentifier).toEqual(null);
+            });
+
+            it('hides remove button', function() {
+              var element = deps.element.find('img');
+              expect(element.hasClass('ng-hide')).toBe(true);
+            });
+
+            it('calls defined remove callback on parent scope', function() {
+              expect(deps.parentScope.onRemoveIdentifier).toHaveBeenCalled();
+              expect(deps.parentScope.onRemoveIdentifier.calls.count()).toEqual(1);
+            });
           });
         });
       });

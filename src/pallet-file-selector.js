@@ -38,9 +38,20 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
 
     _scope.onUploadButtonClick = onUploadButtonClick;
     _scope.getButtonLabel = getButtonLabel;
+    _scope.onRemoveUpload = onRemoveUpload;
+    _scope.emptyIdentifier = emptyIdentifier;
 
     function getButtonLabel() {
       return (_scope.buttonLabel || 'Select file...');
+    }
+
+    function emptyIdentifier() {
+      return !_controller.$viewValue;
+    }
+
+    function onRemoveUpload() {
+      (_scope.removeCallback || angular.noop)();
+      setIdentifier(null);
     }
 
     function successCallback(_data) {
