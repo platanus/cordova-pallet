@@ -34,6 +34,8 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
   return directive;
 
   function link(_scope, _element, _attrs, _controller) {
+    var IMAGE_NAME = 'image.jpg';
+
     _scope.onUploadButtonClick = onUploadButtonClick;
     _scope.getButtonLabel = getButtonLabel;
 
@@ -41,19 +43,41 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
       return (_scope.buttonLabel || 'Select file...');
     }
 
+    function successCallback(_data) {
+      var response = _data.response,
+          successData = (response.upload || response),
+          progressData = { localFileName: IMAGE_NAME, loaded: 1, total: 1 };
+
+      setIdentifier(successData.identifier);
+      successData.localFileName = IMAGE_NAME;
+
+      (_scope.progressCallback || angular.noop)({ event: progressData });
+      (_scope.successCallback || angular.noop)({ uploadData: successData });
+    }
+
+    function errorCallback(_error) {
+      console.info('ERROR', _error);
+    }
+
+    function progressCallback(_progress) {
+      console.info('PROGRESS', _progress);
+    }
+
+    function initupload() {
+      setIdentifier(null);
+      (_scope.initCallback || angular.noop)();
+    }
+
+    function setIdentifier(_identifier) {
+      if(!_identifier) {
+        _controller.$setViewValue(null);
+        return;
+      }
+
+      _controller.$setViewValue(_identifier);
+    }
+
     function onUploadButtonClick() {
-      function uploadSuccess(_result) {
-        console.info('SUCCESS', _result);
-      }
-
-      function uploadError(_error) {
-        console.info('ERROR', _error);
-      }
-
-      function uploadProgress(_progress) {
-        console.info('PROGRESS', _progress);
-      }
-
       var cameraOptions = {
         destinationType: Camera.DestinationType.FILE_URI,
         sourceType: Camera.PictureSourceType.PHOTOLIBRARY,
@@ -61,12 +85,12 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
       };
 
       $cordovaCamera.getPicture(cameraOptions).then(function(_imageData) {
-        (_scope.initCallback || angular.noop)();
+        initupload();
 
         $cordovaFileTransfer.upload(_scope.uploadUrl, _imageData, {
           mimeType: 'image/jpeg',
-          fileName: 'image.jpg'
-        }).then(uploadSuccess, uploadError, uploadProgress);
+          fileName: IMAGE_NAME
+        }).then(successCallback, errorCallback, progressCallback);
       });
     }
   }

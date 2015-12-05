@@ -31,6 +31,8 @@ ngDescribe({
             deps.$cordovaFileTransfer.upload = jasmine.createSpy('upload').and.returnValue(uploadQ.promise);
 
             deps.parentScope.onInit = jasmine.createSpy('onInit');
+            deps.parentScope.setUploadData = jasmine.createSpy('setUploadData');
+            deps.parentScope.setProgress = jasmine.createSpy('setProgress');
 
             deps.element.isolateScope().onUploadButtonClick();
             deps.$rootScope.$apply();
@@ -54,6 +56,23 @@ ngDescribe({
           it('calls defined init callback on parent scope', function() {
             expect(deps.parentScope.onInit).toHaveBeenCalled();
             expect(deps.parentScope.onInit.calls.count()).toEqual(1);
+          });
+
+          it('calls defined upload callback on parent scope with upload data', function() {
+            var response = { identifier: 'OjynOLMx2h', id: '84', localFileName: 'image.jpg' };
+            expect(deps.parentScope.setUploadData).toHaveBeenCalledWith(response);
+            expect(deps.parentScope.setUploadData.calls.count()).toEqual(1);
+          });
+
+          it('calls defined progress callback on successful upload', function() {
+            var progressEvent = { localFileName: 'image.jpg', loaded: 1, total: 1 };
+            expect(deps.parentScope.setProgress).toHaveBeenCalledWith(progressEvent);
+            expect(deps.parentScope.setProgress.calls.count()).toEqual(1);
+          });
+
+          it('sets upload identifier from response', function() {
+            var scope = deps.element.scope();
+            expect(scope.user.uploadIdentifier).toEqual('OjynOLMx2h');
           });
         });
       });
