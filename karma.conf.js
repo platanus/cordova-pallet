@@ -22,8 +22,10 @@ module.exports = function(config) {
       './node_modules/ng-describe/ng-describe.js',
       './bower_components/angular/angular.js',
       './bower_components/angular-mocks/angular-mocks.js',
+      './bower_components/ngCordova/dist/ng-cordova.js',
       './src/index.js',
       './src/*.js',
+      './tests/support/*.js',
       './tests/*.js'
     ],
 
