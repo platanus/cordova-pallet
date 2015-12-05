@@ -55,7 +55,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
     }
 
     function successCallback(_data) {
-      var response = _data.response,
+      var response = JSON.parse(_data.response),
           successData = (response.upload || response),
           progressData = { localFileName: IMAGE_NAME, loaded: 1, total: 1 };
 

@@ -33,7 +33,8 @@ ngDescribe({
 
         describe('with successful response', function() {
           beforeEach(function() {
-            var successCallbackResponse = { response: { upload: { identifier: 'OjynOLMx2h', id: '84' } } };
+            var stringResponse = JSON.stringify({ upload: { identifier: 'OjynOLMx2h', id: '84' } });
+            var successCallbackResponse = { response: stringResponse };
             var uploadQ = deps.$q.defer();
             uploadQ.resolve(successCallbackResponse);
 

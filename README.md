@@ -5,7 +5,6 @@ It's an angular directive to perform asynchronous file uploads.
 ## Installation
 
 ```bash
-bower install ng-file-upload --save
 bower install https://github.com/platanus/cordova-pallet --save
 ```
 
