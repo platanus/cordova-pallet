@@ -67,7 +67,11 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
     }
 
     function errorCallback(_error) {
-      console.info('ERROR', _error);
+      var progressData = { localFileName: IMAGE_NAME, loaded: 1, total: 1 },
+          errorData = { localFileName: IMAGE_NAME, error: _error.exception, status: _error.http_status };
+
+      (_scope.progressCallback || angular.noop)({ event: progressData });
+      (_scope.errorCallback || angular.noop)({ errorData: errorData });
     }
 
     function progressCallback(_progress) {

@@ -15,26 +15,29 @@ ngDescribe({
     '</pallet-file-selector>',
 
     tests: function (deps) {
-      describe('loading a file', function(){
+      describe('loading a file', function() {
+        var imageData = 'content://com.android.providers.media.documents/document/image%3A25650';
+
+        beforeEach(function() {
+          var getPictureQ = deps.$q.defer();
+          getPictureQ.resolve(imageData);
+
+          deps.$cordovaCamera.getPicture = jasmine.createSpy('getPicture').and.returnValue(getPictureQ.promise);
+
+          deps.parentScope.onInit = jasmine.createSpy('onInit');
+          deps.parentScope.setUploadData = jasmine.createSpy('setUploadData');
+          deps.parentScope.setProgress = jasmine.createSpy('setProgress');
+          deps.parentScope.setError = jasmine.createSpy('setError');
+          deps.parentScope.onRemoveIdentifier = jasmine.createSpy('onRemoveIdentifier');
+        });
+
         describe('with successful response', function() {
-          var imageData = 'content://com.android.providers.media.documents/document/image%3A25650';
-
           beforeEach(function() {
-            var getPictureQ = deps.$q.defer();
-            getPictureQ.resolve(imageData);
-
-            deps.$cordovaCamera.getPicture = jasmine.createSpy('getPicture').and.returnValue(getPictureQ.promise);
-
             var successCallbackResponse = { response: { upload: { identifier: 'OjynOLMx2h', id: '84' } } };
             var uploadQ = deps.$q.defer();
             uploadQ.resolve(successCallbackResponse);
 
             deps.$cordovaFileTransfer.upload = jasmine.createSpy('upload').and.returnValue(uploadQ.promise);
-
-            deps.parentScope.onInit = jasmine.createSpy('onInit');
-            deps.parentScope.setUploadData = jasmine.createSpy('setUploadData');
-            deps.parentScope.setProgress = jasmine.createSpy('setProgress');
-            deps.parentScope.onRemoveIdentifier = jasmine.createSpy('onRemoveIdentifier');
 
             deps.element.isolateScope().onUploadButtonClick();
             deps.$rootScope.$apply();
@@ -101,6 +104,38 @@ ngDescribe({
               expect(deps.parentScope.onRemoveIdentifier).toHaveBeenCalled();
               expect(deps.parentScope.onRemoveIdentifier.calls.count()).toEqual(1);
             });
+          });
+        });
+
+        describe('with error response', function() {
+          beforeEach(function() {
+            var scope = deps.element.scope();
+            scope.user = { uploadIdentifier: 'old identifier' };
+
+            var errorCallbackResponse = { http_status: 500, exception: 'error :-(' };
+            var uploadQ = deps.$q.defer();
+            uploadQ.reject(errorCallbackResponse);
+
+            deps.$cordovaFileTransfer.upload = jasmine.createSpy('upload').and.returnValue(uploadQ.promise);
+
+            deps.element.isolateScope().onUploadButtonClick();
+            deps.$rootScope.$apply();
+          });
+
+          it('calls defined error callback on parent scope with error data', function() {
+            var response = { error: 'error :-(', status: 500, localFileName: 'image.jpg' };
+            expect(deps.parentScope.setError).toHaveBeenCalledWith(response);
+            expect(deps.parentScope.setError.calls.count()).toEqual(1);
+          });
+
+          it('hides remove button', function() {
+            var element = deps.element.find('img');
+            expect(element.hasClass('ng-hide')).toBe(true);
+          });
+
+          it('cleans uploadIdentifier from ng-model', function() {
+            var scope = deps.element.scope();
+            expect(scope.user.uploadIdentifier).toBeNull();
           });
         });
       });
