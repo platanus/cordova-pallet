@@ -12,18 +12,28 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
           'ng-click="onUploadButtonClick()"> ' +
           '<button>{{ getButtonLabel() }}</button> ' +
         '</div>' +
+        '<img class="remove-btn" ' +
+          'ng-src="{{ trashIcon }}" ' +
+          'ng-click="onRemoveUpload()" ' +
+          'ng-hide="emptyIdentifier() || isLoading()" />' +
       '</div>',
     require: 'ngModel',
     scope: {
       uploadUrl: '@',
-      buttonLabel: '@'
+      buttonLabel: '@',
+      initCallback: '&',
+      successCallback: '&',
+      progressCallback: '&',
+      errorCallback: '&',
+      removeCallback: '&',
+      doneCallback: '&'
     },
     link: link,
   };
 
   return directive;
 
-  function link(_scope) {
+  function link(_scope, _element, _attrs, _controller) {
     _scope.onUploadButtonClick = onUploadButtonClick;
     _scope.getButtonLabel = getButtonLabel;
 
@@ -51,6 +61,8 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
       };
 
       $cordovaCamera.getPicture(cameraOptions).then(function(_imageData) {
+        (_scope.initCallback || angular.noop)();
+
         $cordovaFileTransfer.upload(_scope.uploadUrl, _imageData, {
           mimeType: 'image/jpeg',
           fileName: 'image.jpg'

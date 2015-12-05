@@ -5,6 +5,7 @@ ngDescribe({
   element:
     '<pallet-file-selector ' +
       'button-label="Upload please" ' +
+      'init-callback="onInit()" ' +
       'success-callback="setUploadData(uploadData)" ' +
       'progress-callback="setProgress(event)" ' +
       'error-callback="setError(errorData)" ' +
@@ -29,6 +30,8 @@ ngDescribe({
 
             deps.$cordovaFileTransfer.upload = jasmine.createSpy('upload').and.returnValue(uploadQ.promise);
 
+            deps.parentScope.onInit = jasmine.createSpy('onInit');
+
             deps.element.isolateScope().onUploadButtonClick();
             deps.$rootScope.$apply();
           });
@@ -46,6 +49,11 @@ ngDescribe({
           it('calls upload method with correct params', function() {
             expect(deps.$cordovaFileTransfer.upload).toHaveBeenCalledWith(
               'uploads', imageData, { mimeType: 'image/jpeg', fileName: 'image.jpg' });
+          });
+
+          it('calls defined init callback on parent scope', function() {
+            expect(deps.parentScope.onInit).toHaveBeenCalled();
+            expect(deps.parentScope.onInit.calls.count()).toEqual(1);
           });
         });
       });
