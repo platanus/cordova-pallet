@@ -30,7 +30,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
         '<img class="remove-btn" ' +
           'ng-src="{{ trashIcon }}" ' +
           'ng-click="onRemoveUpload()" ' +
-          'ng-hide="emptyIdentifier() || isLoading()" />' +
+          'ng-hide="emptyIdentifier()" />' +
       '</div>',
     require: 'ngModel',
     scope: {
