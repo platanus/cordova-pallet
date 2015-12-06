@@ -5,6 +5,7 @@ ngDescribe({
   element:
     '<pallet-file-selector ' +
       'button-label="Upload please" ' +
+      'button-classes="button button-positive" ' +
       'init-callback="onInit()" ' +
       'success-callback="setUploadData(uploadData)" ' +
       'progress-callback="setProgress(event)" ' +
@@ -47,6 +48,13 @@ ngDescribe({
           it('change custom button label', function() {
             var element = deps.element.find('button');
             expect(element.text()).toBe('Upload please');
+          });
+
+          it('adds custom classes to button', function() {
+            var element = deps.element.find('button');
+            expect(element.hasClass('button')).toBe(true);
+            expect(element.hasClass('button-positive')).toBe(true);
+            expect(element.hasClass('upload-btn')).toBe(true);
           });
 
           it('calls getPicture method with correct params', function() {

@@ -23,7 +23,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
   var directive = {
     template:
       '<div class="pallet-file-selector">' +
-        '<button class="upload-btn" ' +
+        '<button class="{{ getButtonClasses() }}" ' +
           'ng-click="onUploadButtonClick()">' +
           '{{ getButtonLabel() }}' +
         '</button>' +
@@ -36,6 +36,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
     replace: true,
     scope: {
       uploadUrl: '@',
+      buttonClasses: '@',
       buttonLabel: '@',
       initCallback: '&',
       successCallback: '&',
@@ -57,6 +58,11 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
     _scope.onRemoveUpload = onRemoveUpload;
     _scope.emptyIdentifier = emptyIdentifier;
     _scope.trashIcon = trashIcon;
+    _scope.getButtonClasses = getButtonClasses;
+
+    function getButtonClasses() {
+      return ['upload-btn', _scope.buttonClasses].join(' ');
+    }
 
     function getButtonLabel() {
       return (_scope.buttonLabel || 'Select file...');
