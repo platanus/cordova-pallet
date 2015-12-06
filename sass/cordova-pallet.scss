@@ -3,6 +3,7 @@
 
   .upload-btn {
     display: inline-block;
+    vertical-align: middle;
     width: 180px;
     height: 60px;
   }
@@ -10,9 +11,9 @@
   img {
     cursor: pointer;
     display: inline-block;
+    vertical-align: middle;
     width: 40px;
     height: 30px;
     padding-left: 15px;
-    vertical-align: middle;
   }
 }
