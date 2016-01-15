@@ -52,7 +52,10 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
   return directive;
 
   function link(_scope, _element, _attrs, _controller) {
-    var IMAGE_NAME = 'image.jpg';
+    var IMAGE_NAME = 'image.jpg',
+        GALLERY_MODE = 'gallery',
+        CAMERA_MODE = 'camera',
+        VALID_MODES = [GALLERY_MODE, CAMERA_MODE];
 
     _scope.onUploadButtonClick = onUploadButtonClick;
     _scope.getButtonLabel = getButtonLabel;
@@ -118,23 +121,19 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
     }
 
     function getModes() {
-      var validModes = {
-            camera: Camera.PictureSourceType.CAMERA,
-            gallery: Camera.PictureSourceType.PHOTOLIBRARY
-          },
-          modes = [];
+      var modes = [];
 
       if(!_scope.modes || !(_scope.modes instanceof Array)) {
-        modes.push(validModes.gallery);
+        modes.push(VALID_MODES[0]);
         return modes;
       }
 
       var size = _scope.modes.length, mode, i;
 
       for(i = 0; i < size; i++) {
-        mode = validModes[_scope.modes[i]];
+        mode = _scope.modes[i];
 
-        if(mode !== undefined) {
+        if(VALID_MODES.indexOf(mode) !== -1) {
           modes.push(mode);
         }
       }
@@ -142,11 +141,19 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
       return modes;
     }
 
-    function onUploadButtonClick() {
+    function uploadFromCamera(_mode) {
+      var sourceType = Camera.PictureSourceType.PHOTOLIBRARY;
+
+      if (_mode === CAMERA_MODE) {
+        sourceType = Camera.PictureSourceType.CAMERA;
+      }
+
       var cameraOptions = {
         destinationType: Camera.DestinationType.FILE_URI,
-        sourceType: Camera.PictureSourceType.PHOTOLIBRARY,
+        sourceType: sourceType,
         encodingType: Camera.EncodingType.JPEG,
+        saveToPhotoAlbum: true,
+        correctOrientation:true
       };
 
       $cordovaCamera.getPicture(cameraOptions).then(function(_imageData) {
@@ -156,7 +163,27 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
           mimeType: 'image/jpeg',
           fileName: IMAGE_NAME
         }).then(successCallback, errorCallback, progressCallback);
+      }, function(_error) {
+        console.error(_error);
       });
+    }
+
+    function onUploadButtonClick() {
+      var modes = getModes();
+
+      if(modes.length > 1) {
+        console.info('TODO: open mode selector');
+
+      } else {
+        var mode = modes[0];
+
+        switch(mode) {
+          case GALLERY_MODE:
+          case CAMERA_MODE:
+            uploadFromCamera(mode);
+            break;
+        }
+      }
     }
   }
 }

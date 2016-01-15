@@ -59,7 +59,14 @@ ngDescribe({
           });
 
           it('calls getPicture method with correct params', function() {
-            var params = { destinationType: 1, sourceType: 1, encodingType: 1 };
+            var params = {
+              destinationType: 1,
+              sourceType: 1,
+              encodingType: 1,
+              saveToPhotoAlbum: true,
+              correctOrientation: true
+            };
+
             expect(deps.$cordovaCamera.getPicture).toHaveBeenCalledWith(params);
           });
 
