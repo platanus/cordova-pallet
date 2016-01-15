@@ -19,7 +19,7 @@ angular
   .module('platanus.cordovaPallet')
   .directive('palletFileSelector', palletFileSelector);
 
-function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
+function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $cordovaActionSheet) {
   var directive = {
     template:
       '<div class="pallet-file-selector">' +
@@ -168,26 +168,52 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
       });
     }
 
+    function uploadFromModeSelector(_modes) {
+      var options = {
+        title: 'Get file from...',
+        buttonLabels: _modes,
+        addCancelButtonWithLabel: 'Cancel',
+        androidEnableCancelButton: true
+      };
+
+      $cordovaActionSheet.show(options).then(function(_btnIndex) {
+        _btnIndex -= 1;
+
+        if(_btnIndex === _modes.length) { // Cancel button
+          return;
+        }
+
+        uploadFromMode(_modes[_btnIndex]);
+      });
+    }
+
+    function uploadFromMode(_mode) {
+      switch(_mode) {
+        case GALLERY_MODE:
+        case CAMERA_MODE:
+          uploadFromCamera(_mode);
+          break;
+      }
+    }
+
     function onUploadButtonClick() {
       var modes = getModes();
 
       if(modes.length > 1) {
-        console.info('TODO: open mode selector');
+        uploadFromModeSelector(modes);
 
       } else {
-        var mode = modes[0];
-
-        switch(mode) {
-          case GALLERY_MODE:
-          case CAMERA_MODE:
-            uploadFromCamera(mode);
-            break;
-        }
+        uploadFromMode(modes[0]);
       }
     }
   }
 }
 
-palletFileSelector.$inject = ['trashIcon', '$cordovaFileTransfer', '$cordovaCamera'];
+palletFileSelector.$inject = [
+  'trashIcon',
+  '$cordovaFileTransfer',
+  '$cordovaCamera',
+  '$cordovaActionSheet'
+];
 
 })();
