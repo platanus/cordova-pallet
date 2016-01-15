@@ -4,7 +4,7 @@ angular
   .module('platanus.cordovaPallet')
   .directive('palletFileSelector', palletFileSelector);
 
-function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
+function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $cordovaActionSheet, palletModesSrv) {
   var directive = {
     template:
       '<div class="pallet-file-selector">' +
@@ -23,6 +23,8 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
       uploadUrl: '@',
       buttonClasses: '@',
       buttonLabel: '@',
+      modes: '=',
+      modeSelectorOptions: '=',
       initCallback: '&',
       successCallback: '&',
       progressCallback: '&',
@@ -87,7 +89,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
       (_scope.progressCallback || angular.noop)({ event: progressData });
     }
 
-    function initupload() {
+    function initUpload() {
       setIdentifier(null);
       (_scope.initCallback || angular.noop)();
     }
@@ -101,25 +103,68 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
       _controller.$setViewValue(_identifier);
     }
 
-    function onUploadButtonClick() {
-      var cameraOptions = {
-        destinationType: Camera.DestinationType.FILE_URI,
-        sourceType: Camera.PictureSourceType.PHOTOLIBRARY,
-        encodingType: Camera.EncodingType.JPEG,
-      };
-
-      $cordovaCamera.getPicture(cameraOptions).then(function(_imageData) {
-        initupload();
+    function uploadFromCamera(_mode) {
+      $cordovaCamera.getPicture(_mode.options).then(function(_imageData) {
+        initUpload();
 
         $cordovaFileTransfer.upload(_scope.uploadUrl, _imageData, {
           mimeType: 'image/jpeg',
           fileName: IMAGE_NAME
         }).then(successCallback, errorCallback, progressCallback);
+      }, function(_error) {
+        console.error(_error);
       });
+    }
+
+    function uploadFromModeSelector(_modes) {
+      var selectorOptions = palletModesSrv.modeSelectorOptions(_scope.modeSelectorOptions);
+
+      var options = {
+        title: selectorOptions.title,
+        buttonLabels: palletModesSrv.labelsFromModes(_modes),
+        addCancelButtonWithLabel: selectorOptions.cancelBtnLabel,
+        androidEnableCancelButton: true
+      };
+
+      $cordovaActionSheet.show(options).then(function(_btnIndex) {
+        _btnIndex -= 1;
+
+        if(_btnIndex === _modes.length) { // Cancel button
+          return;
+        }
+
+        uploadFromMode(_modes[_btnIndex]);
+      });
+    }
+
+    function uploadFromMode(_mode) {
+      switch(_mode.name) {
+        case palletModesSrv.GALLERY_MODE:
+        case palletModesSrv.CAMERA_MODE:
+          uploadFromCamera(_mode);
+          break;
+      }
+    }
+
+    function onUploadButtonClick() {
+      var modes = palletModesSrv.getModes(_scope.modes);
+
+      if(modes.length > 1) {
+        uploadFromModeSelector(modes);
+
+      } else {
+        uploadFromMode(modes[0]);
+      }
     }
   }
 }
 
-palletFileSelector.$inject = ['trashIcon', '$cordovaFileTransfer', '$cordovaCamera'];
+palletFileSelector.$inject = [
+  'trashIcon',
+  '$cordovaFileTransfer',
+  '$cordovaCamera',
+  '$cordovaActionSheet',
+  'palletModesSrv'
+];
 
 })();

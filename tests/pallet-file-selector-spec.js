@@ -4,6 +4,7 @@ ngDescribe({
   inject: ['$cordovaCamera', '$cordovaFileTransfer', '$q'],
   element:
     '<pallet-file-selector ' +
+      'modes="modes" ' +
       'button-label="Upload please" ' +
       'button-classes="button button-positive" ' +
       'init-callback="onInit()" ' +
@@ -58,7 +59,12 @@ ngDescribe({
           });
 
           it('calls getPicture method with correct params', function() {
-            var params = { destinationType: 1, sourceType: 0, encodingType: 0 };
+            var params = {
+              destinationType: 1,
+              sourceType: 1,
+              encodingType: 1
+            };
+
             expect(deps.$cordovaCamera.getPicture).toHaveBeenCalledWith(params);
           });
 
