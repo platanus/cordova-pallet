@@ -6,24 +6,37 @@ ngDescribe({
     describe('labelsFromModes method', function() {
       it('returns labels', function() {
         var modes = [{ label: 'Camera' }, { label: 'Gallery'}];
-        result = deps.palletModesSrv.labelsFromModes(modes);
+        var result = deps.palletModesSrv.labelsFromModes(modes);
         expect(result.length).toEqual(2);
         expect(result[0]).toEqual('Camera');
         expect(result[1]).toEqual('Gallery');
       });
     });
 
+    describe('modeSelectorOptions method', function() {
+      it('returns default options', function() {
+        var result = deps.palletModesSrv.modeSelectorOptions({});
+        expect(result).toEqual({ title: 'Get file from...', cancelBtnLabel: 'Cancel' });
+      });
+
+      it('overrides default options', function() {
+        var options = { title: 'Get File', cancelBtnLabel: 'Cancel action' };
+        var result = deps.palletModesSrv.modeSelectorOptions(options);
+        expect(result).toEqual(options);
+      });
+    });
+
     describe('getModes method', function() {
       it('returns default mode passing invalid data', function() {
         var invalidData = { needsTo: 'be Array'};
-        result = deps.palletModesSrv.getModes(invalidData);
+        var result = deps.palletModesSrv.getModes(invalidData);
         expect(result.length).toEqual(1);
         expect(result[0].name).toEqual('gallery');
       });
 
       it('creates valid modes from given data', function() {
         var modes = [{ name: 'camera' }, { name: 'gallery'}];
-        result = deps.palletModesSrv.getModes(modes);
+        var result = deps.palletModesSrv.getModes(modes);
         var camera = result[0], gallery = result[1];
         expect(result.length).toEqual(2);
         expect(camera.name).toEqual('camera');
@@ -46,7 +59,7 @@ ngDescribe({
 
       it('allows custom label', function() {
         var modes = [{ name: 'camera', label: 'Desde la camara' }];
-        result = deps.palletModesSrv.getModes(modes);
+        var result = deps.palletModesSrv.getModes(modes);
         expect(result[0].label).toEqual('Desde la camara');
       });
 
@@ -57,20 +70,20 @@ ngDescribe({
           encodingType: 6,
           saveToPhotoAlbum: false,
           correctOrientation: false
-        }
+        };
 
         var galleryOptions = {
           destinationType: 6,
           sourceType: 6,
           encodingType: 6
-        }
+        };
 
         var modes = [
           { name: 'camera', options: cameraOptions },
           { name: 'gallery', options: galleryOptions }
         ];
 
-        result = deps.palletModesSrv.getModes(modes);
+        var result = deps.palletModesSrv.getModes(modes);
         var camera = result[0], gallery = result[1];
 
         expect(camera.options).toEqual({

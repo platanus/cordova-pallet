@@ -85,7 +85,7 @@ function palletModesSrv() {
     return {
       title: !!_data.title ? _data.title : 'Get file from...',
       cancelBtnLabel: !!_data.cancelBtnLabel ? _data.cancelBtnLabel : 'Cancel'
-    }
+    };
   }
 
   function labelsFromModes(_modes) {
