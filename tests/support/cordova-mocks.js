@@ -3,9 +3,10 @@ var Camera = {
     FILE_URI: 1
   },
   PictureSourceType: {
-    PHOTOLIBRARY: 0
+    PHOTOLIBRARY: 1,
+    CAMERA: 2
   },
   EncodingType: {
-    JPEG: 0
+    JPEG: 1
   }
 };

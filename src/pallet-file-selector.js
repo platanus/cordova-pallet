@@ -23,6 +23,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
       uploadUrl: '@',
       buttonClasses: '@',
       buttonLabel: '@',
+      modes: '=',
       initCallback: '&',
       successCallback: '&',
       progressCallback: '&',
@@ -99,6 +100,31 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera) {
       }
 
       _controller.$setViewValue(_identifier);
+    }
+
+    function getModes() {
+      var validModes = {
+            camera: Camera.PictureSourceType.CAMERA,
+            gallery: Camera.PictureSourceType.PHOTOLIBRARY
+          },
+          modes = [];
+
+      if(!_scope.modes || !(_scope.modes instanceof Array)) {
+        modes.push(validModes.gallery);
+        return modes;
+      }
+
+      var size = _scope.modes.length, mode, i;
+
+      for(i = 0; i < size; i++) {
+        mode = validModes[_scope.modes[i]];
+
+        if(mode !== undefined) {
+          modes.push(mode);
+        }
+      }
+
+      return modes;
     }
 
     function onUploadButtonClick() {
