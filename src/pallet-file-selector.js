@@ -24,6 +24,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
       buttonClasses: '@',
       buttonLabel: '@',
       modes: '=',
+      modeSelectorOptions: '=',
       initCallback: '&',
       successCallback: '&',
       progressCallback: '&',
@@ -116,10 +117,12 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
     }
 
     function uploadFromModeSelector(_modes) {
+      var selectorOptions = palletModesSrv.modeSelectorOptions(_scope.modeSelectorOptions);
+
       var options = {
-        title: 'Get file from...',
+        title: selectorOptions.title,
         buttonLabels: palletModesSrv.labelsFromModes(_modes),
-        addCancelButtonWithLabel: 'Cancel',
+        addCancelButtonWithLabel: selectorOptions.cancelBtnLabel,
         androidEnableCancelButton: true
       };
 

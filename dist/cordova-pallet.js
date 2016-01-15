@@ -39,6 +39,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
       buttonClasses: '@',
       buttonLabel: '@',
       modes: '=',
+      modeSelectorOptions: '=',
       initCallback: '&',
       successCallback: '&',
       progressCallback: '&',
@@ -131,10 +132,12 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
     }
 
     function uploadFromModeSelector(_modes) {
+      var selectorOptions = palletModesSrv.modeSelectorOptions(_scope.modeSelectorOptions);
+
       var options = {
-        title: 'Get file from...',
+        title: selectorOptions.title,
         buttonLabels: palletModesSrv.labelsFromModes(_modes),
-        addCancelButtonWithLabel: 'Cancel',
+        addCancelButtonWithLabel: selectorOptions.cancelBtnLabel,
         androidEnableCancelButton: true
       };
 
@@ -197,6 +200,7 @@ function palletModesSrv() {
 
   this.getModes = getModes;
   this.labelsFromModes = labelsFromModes;
+  this.modeSelectorOptions = modeSelectorOptions;
 
   function setCameraOptions(_mode, _data) {
     _mode.label = !!_data.label ? _data.label : 'Camera';
@@ -257,6 +261,17 @@ function palletModesSrv() {
     }
 
     return modes;
+  }
+
+  function modeSelectorOptions(_data) {
+    if(!(_data instanceof Object)) {
+      throw new Error('model selector options needs to be a json');
+    }
+
+    return {
+      title: !!_data.title ? _data.title : 'Get file from...',
+      cancelBtnLabel: !!_data.cancelBtnLabel ? _data.cancelBtnLabel : 'Cancel'
+    }
   }
 
   function labelsFromModes(_modes) {
