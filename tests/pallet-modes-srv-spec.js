@@ -3,6 +3,16 @@ ngDescribe({
   modules: 'platanus.cordovaPallet',
   inject: 'palletModesSrv',
   tests: function(deps) {
+    describe('labelsFromModes method', function() {
+      it('returns labels', function() {
+        var modes = [{ label: 'Camera' }, { label: 'Gallery'}];
+        result = deps.palletModesSrv.labelsFromModes(modes);
+        expect(result.length).toEqual(2);
+        expect(result[0]).toEqual('Camera');
+        expect(result[1]).toEqual('Gallery');
+      });
+    });
+
     describe('getModes method', function() {
       it('returns default mode passing invalid data', function() {
         var invalidData = { needsTo: 'be Array'};
