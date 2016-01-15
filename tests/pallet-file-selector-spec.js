@@ -16,7 +16,7 @@ ngDescribe({
       'ng-model="user.uploadIdentifier">' +
     '</pallet-file-selector>',
 
-    tests: function (deps) {
+    tests: function(deps) {
       describe('loading a file', function() {
         var imageData = 'content://com.android.providers.media.documents/document/image%3A25650';
 

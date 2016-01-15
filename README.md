@@ -113,7 +113,7 @@ $scope.captureModes = [
   },
   {
     name: 'gallery',
-    label: 'From Pictures Gallery'
+    label: 'From Pictures Gallery',
     options: {
       encodingType: Camera.EncodingType.JPEG
     }
