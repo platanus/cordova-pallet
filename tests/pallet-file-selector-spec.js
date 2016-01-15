@@ -62,9 +62,7 @@ ngDescribe({
             var params = {
               destinationType: 1,
               sourceType: 1,
-              encodingType: 1,
-              saveToPhotoAlbum: true,
-              correctOrientation: true
+              encodingType: 1
             };
 
             expect(deps.$cordovaCamera.getPicture).toHaveBeenCalledWith(params);

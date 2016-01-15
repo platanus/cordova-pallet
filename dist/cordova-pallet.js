@@ -106,7 +106,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
       (_scope.progressCallback || angular.noop)({ event: progressData });
     }
 
-    function initupload() {
+    function initUpload() {
       setIdentifier(null);
       (_scope.initCallback || angular.noop)();
     }
@@ -120,44 +120,63 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
       _controller.$setViewValue(_identifier);
     }
 
+    function buildMode(_data) {
+      if(!(_data instanceof Object)) {
+        throw new Error('Mode data needs to be json');
+      }
+
+      if(!_data.name) {
+        throw new Error('Missing name attribute');
+      }
+
+      if(VALID_MODES.indexOf(_data.name) === -1) {
+        throw new Error('Invalid name attribute');
+      }
+
+      if(!_data.options) {
+        _data.options = {};
+      }
+
+      var mode = { name: _data.name, label: 'Unknown', options: {} };
+
+      if(mode.name === CAMERA_MODE) {
+        mode.label = !!_data.label ? _data.label : 'Camera';
+        mode.options.destinationType = Camera.DestinationType.FILE_URI;
+        mode.options.sourceType = Camera.PictureSourceType.CAMERA;
+        mode.options.encodingType = _data.options.hasOwnProperty('encodingType') ? _data.options.encodingType : Camera.EncodingType.JPEG;
+        mode.options.saveToPhotoAlbum = _data.options.hasOwnProperty('saveToPhotoAlbum') ? _data.options.saveToPhotoAlbum : true;
+        mode.options.correctOrientation = _data.options.hasOwnProperty('correctOrientation') ? _data.options.correctOrientation : true;
+
+      } else if(mode.name === GALLERY_MODE) {
+        mode.label = !!_data.label ? _data.label : 'Gallery';
+        mode.options.destinationType = Camera.DestinationType.FILE_URI;
+        mode.options.sourceType = Camera.PictureSourceType.PHOTOLIBRARY;
+        mode.options.encodingType = _data.options.hasOwnProperty('encodingType') ? _data.options.encodingType : Camera.EncodingType.JPEG;
+      }
+
+      return mode;
+    }
+
     function getModes() {
       var modes = [];
 
       if(!_scope.modes || !(_scope.modes instanceof Array)) {
-        modes.push(VALID_MODES[0]);
+        modes.push(buildMode({ name: GALLERY_MODE }));
         return modes;
       }
 
-      var size = _scope.modes.length, mode, i;
+      var size = _scope.modes.length, i;
 
       for(i = 0; i < size; i++) {
-        mode = _scope.modes[i];
-
-        if(VALID_MODES.indexOf(mode) !== -1) {
-          modes.push(mode);
-        }
+        modes.push(buildMode(_scope.modes[i]));
       }
 
       return modes;
     }
 
     function uploadFromCamera(_mode) {
-      var sourceType = Camera.PictureSourceType.PHOTOLIBRARY;
-
-      if (_mode === CAMERA_MODE) {
-        sourceType = Camera.PictureSourceType.CAMERA;
-      }
-
-      var cameraOptions = {
-        destinationType: Camera.DestinationType.FILE_URI,
-        sourceType: sourceType,
-        encodingType: Camera.EncodingType.JPEG,
-        saveToPhotoAlbum: true,
-        correctOrientation:true
-      };
-
-      $cordovaCamera.getPicture(cameraOptions).then(function(_imageData) {
-        initupload();
+      $cordovaCamera.getPicture(_mode.options).then(function(_imageData) {
+        initUpload();
 
         $cordovaFileTransfer.upload(_scope.uploadUrl, _imageData, {
           mimeType: 'image/jpeg',
@@ -168,10 +187,20 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
       });
     }
 
+    function labelsFromModes(_modes) {
+      var labels = [], size = _modes.length, i;
+
+      for(i = 0; i < size; i++) {
+        labels.push(_modes[i].label);
+      }
+
+      return labels;
+    }
+
     function uploadFromModeSelector(_modes) {
       var options = {
         title: 'Get file from...',
-        buttonLabels: _modes,
+        buttonLabels: labelsFromModes(_modes),
         addCancelButtonWithLabel: 'Cancel',
         androidEnableCancelButton: true
       };
@@ -188,7 +217,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
     }
 
     function uploadFromMode(_mode) {
-      switch(_mode) {
+      switch(_mode.name) {
         case GALLERY_MODE:
         case CAMERA_MODE:
           uploadFromCamera(_mode);
