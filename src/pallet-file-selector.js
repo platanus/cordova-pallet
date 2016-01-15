@@ -29,8 +29,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
       successCallback: '&',
       progressCallback: '&',
       errorCallback: '&',
-      removeCallback: '&',
-      doneCallback: '&'
+      removeCallback: '&'
     },
     link: link,
   };
