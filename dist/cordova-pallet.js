@@ -19,7 +19,7 @@ angular
   .module('platanus.cordovaPallet')
   .directive('palletFileSelector', palletFileSelector);
 
-function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $cordovaActionSheet) {
+function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $cordovaActionSheet, palletModesSrv) {
   var directive = {
     template:
       '<div class="pallet-file-selector">' +
@@ -52,10 +52,7 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
   return directive;
 
   function link(_scope, _element, _attrs, _controller) {
-    var IMAGE_NAME = 'image.jpg',
-        GALLERY_MODE = 'gallery',
-        CAMERA_MODE = 'camera',
-        VALID_MODES = [GALLERY_MODE, CAMERA_MODE];
+    var IMAGE_NAME = 'image.jpg';
 
     _scope.onUploadButtonClick = onUploadButtonClick;
     _scope.getButtonLabel = getButtonLabel;
@@ -120,60 +117,6 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
       _controller.$setViewValue(_identifier);
     }
 
-    function buildMode(_data) {
-      if(!(_data instanceof Object)) {
-        throw new Error('Mode data needs to be json');
-      }
-
-      if(!_data.name) {
-        throw new Error('Missing name attribute');
-      }
-
-      if(VALID_MODES.indexOf(_data.name) === -1) {
-        throw new Error('Invalid name attribute');
-      }
-
-      if(!_data.options) {
-        _data.options = {};
-      }
-
-      var mode = { name: _data.name, label: 'Unknown', options: {} };
-
-      if(mode.name === CAMERA_MODE) {
-        mode.label = !!_data.label ? _data.label : 'Camera';
-        mode.options.destinationType = Camera.DestinationType.FILE_URI;
-        mode.options.sourceType = Camera.PictureSourceType.CAMERA;
-        mode.options.encodingType = _data.options.hasOwnProperty('encodingType') ? _data.options.encodingType : Camera.EncodingType.JPEG;
-        mode.options.saveToPhotoAlbum = _data.options.hasOwnProperty('saveToPhotoAlbum') ? _data.options.saveToPhotoAlbum : true;
-        mode.options.correctOrientation = _data.options.hasOwnProperty('correctOrientation') ? _data.options.correctOrientation : true;
-
-      } else if(mode.name === GALLERY_MODE) {
-        mode.label = !!_data.label ? _data.label : 'Gallery';
-        mode.options.destinationType = Camera.DestinationType.FILE_URI;
-        mode.options.sourceType = Camera.PictureSourceType.PHOTOLIBRARY;
-        mode.options.encodingType = _data.options.hasOwnProperty('encodingType') ? _data.options.encodingType : Camera.EncodingType.JPEG;
-      }
-
-      return mode;
-    }
-
-    function getModes() {
-      var modes = [];
-
-      if(!_scope.modes || !(_scope.modes instanceof Array)) {
-        modes.push(buildMode({ name: GALLERY_MODE }));
-        return modes;
-      }
-
-      var size = _scope.modes.length, i;
-
-      for(i = 0; i < size; i++) {
-        modes.push(buildMode(_scope.modes[i]));
-      }
-
-      return modes;
-    }
-
     function uploadFromCamera(_mode) {
       $cordovaCamera.getPicture(_mode.options).then(function(_imageData) {
         initUpload();
@@ -187,20 +130,10 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
       });
     }
 
-    function labelsFromModes(_modes) {
-      var labels = [], size = _modes.length, i;
-
-      for(i = 0; i < size; i++) {
-        labels.push(_modes[i].label);
-      }
-
-      return labels;
-    }
-
     function uploadFromModeSelector(_modes) {
       var options = {
         title: 'Get file from...',
-        buttonLabels: labelsFromModes(_modes),
+        buttonLabels: palletModesSrv.labelsFromModes(_modes),
         addCancelButtonWithLabel: 'Cancel',
         androidEnableCancelButton: true
       };
@@ -218,15 +151,15 @@ function palletFileSelector(trashIcon, $cordovaFileTransfer, $cordovaCamera, $co
 
     function uploadFromMode(_mode) {
       switch(_mode.name) {
-        case GALLERY_MODE:
-        case CAMERA_MODE:
+        case palletModesSrv.GALLERY_MODE:
+        case palletModesSrv.CAMERA_MODE:
           uploadFromCamera(_mode);
           break;
       }
     }
 
     function onUploadButtonClick() {
-      var modes = getModes();
+      var modes = palletModesSrv.getModes(_scope.modes);
 
       if(modes.length > 1) {
         uploadFromModeSelector(modes);
@@ -242,7 +175,99 @@ palletFileSelector.$inject = [
   'trashIcon',
   '$cordovaFileTransfer',
   '$cordovaCamera',
-  '$cordovaActionSheet'
+  '$cordovaActionSheet',
+  'palletModesSrv'
 ];
+
+})();
+
+(function(){
+
+angular
+  .module('platanus.cordovaPallet')
+  .service('palletModesSrv', palletModesSrv);
+
+function palletModesSrv() {
+  var GALLERY_MODE = 'gallery',
+      CAMERA_MODE = 'camera',
+      VALID_MODES = [GALLERY_MODE, CAMERA_MODE];
+
+  this.GALLERY_MODE = GALLERY_MODE;
+  this.CAMERA_MODE = CAMERA_MODE;
+
+  this.getModes = getModes;
+  this.labelsFromModes = labelsFromModes;
+
+  function setCameraOptions(_mode, _data) {
+    _mode.label = !!_data.label ? _data.label : 'Camera';
+    _mode.options.destinationType = Camera.DestinationType.FILE_URI;
+    _mode.options.sourceType = Camera.PictureSourceType.CAMERA;
+    _mode.options.encodingType = _data.options.hasOwnProperty('encodingType') ? _data.options.encodingType : Camera.EncodingType.JPEG;
+    _mode.options.saveToPhotoAlbum = _data.options.hasOwnProperty('saveToPhotoAlbum') ? _data.options.saveToPhotoAlbum : true;
+    _mode.options.correctOrientation = _data.options.hasOwnProperty('correctOrientation') ? _data.options.correctOrientation : true;
+  }
+
+  function setGalleryOptions(_mode, _data) {
+    _mode.label = !!_data.label ? _data.label : 'Gallery';
+    _mode.options.destinationType = Camera.DestinationType.FILE_URI;
+    _mode.options.sourceType = Camera.PictureSourceType.PHOTOLIBRARY;
+    _mode.options.encodingType = _data.options.hasOwnProperty('encodingType') ? _data.options.encodingType : Camera.EncodingType.JPEG;
+  }
+
+  function buildMode(_data) {
+    if(!(_data instanceof Object)) {
+      throw new Error('Mode data needs to be json');
+    }
+
+    if(!_data.name) {
+      throw new Error('Missing name attribute');
+    }
+
+    if(VALID_MODES.indexOf(_data.name) === -1) {
+      throw new Error('Invalid name attribute');
+    }
+
+    if(!_data.options) {
+      _data.options = {};
+    }
+
+    var mode = { name: _data.name, label: 'Unknown', options: {} };
+
+    if(mode.name === CAMERA_MODE) {
+      setCameraOptions(mode, _data);
+    } else if(mode.name === GALLERY_MODE) {
+      setGalleryOptions(mode, _data);
+    }
+
+    return mode;
+  }
+
+  function getModes(_modesData) {
+    var modes = [];
+
+    if(!_modesData || !(_modesData instanceof Array)) {
+      modes.push(buildMode({ name: GALLERY_MODE }));
+      return modes;
+    }
+
+    var size = _modesData.length, i;
+
+    for(i = 0; i < size; i++) {
+      modes.push(buildMode(_modesData[i]));
+    }
+
+    return modes;
+  }
+
+  function labelsFromModes(_modes) {
+    var labels = [], size = _modes.length, i;
+
+    for(i = 0; i < size; i++) {
+      labels.push(_modes[i].label);
+    }
+
+    return labels;
+  }
+}
 
 })();
