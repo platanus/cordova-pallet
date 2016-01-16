@@ -78,6 +78,10 @@ function palletModesSrv() {
   }
 
   function modeSelectorOptions(_data) {
+    if(!_data) {
+      _data = {};
+    }
+
     if(!(_data instanceof Object)) {
       throw new Error('model selector options needs to be a json');
     }

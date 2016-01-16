@@ -263,6 +263,10 @@ function palletModesSrv() {
   }
 
   function modeSelectorOptions(_data) {
+    if(!_data) {
+      _data = {};
+    }
+
     if(!(_data instanceof Object)) {
       throw new Error('model selector options needs to be a json');
     }
@@ -270,7 +274,7 @@ function palletModesSrv() {
     return {
       title: !!_data.title ? _data.title : 'Get file from...',
       cancelBtnLabel: !!_data.cancelBtnLabel ? _data.cancelBtnLabel : 'Cancel'
-    }
+    };
   }
 
   function labelsFromModes(_modes) {

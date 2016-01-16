@@ -1,12 +1,13 @@
 ngDescribe({
-  name: 'Async upload directive',
+  name: 'File selector directive',
   modules: 'platanus.cordovaPallet',
-  inject: ['$cordovaCamera', '$cordovaFileTransfer', '$q'],
+  inject: ['$cordovaCamera', '$cordovaFileTransfer', '$q', '$cordovaActionSheet', 'palletModesSrv'],
   element:
     '<pallet-file-selector ' +
-      'modes="modes" ' +
       'button-label="Upload please" ' +
       'button-classes="button button-positive" ' +
+      'modes="modes" ' +
+      'mode-selector-options="modeSelectorOpts" ' +
       'init-callback="onInit()" ' +
       'success-callback="setUploadData(uploadData)" ' +
       'progress-callback="setProgress(event)" ' +
@@ -16,21 +17,98 @@ ngDescribe({
       'ng-model="user.uploadIdentifier">' +
     '</pallet-file-selector>',
 
-    tests: function(deps) {
-      describe('loading a file', function() {
-        var imageData = 'content://com.android.providers.media.documents/document/image%3A25650';
+  tests: function(deps) {
+    it('change custom button label', function() {
+      var element = deps.element.find('button');
+      expect(element.text()).toBe('Upload please');
+    });
 
+    it('adds custom classes to button', function() {
+      var element = deps.element.find('button');
+      expect(element.hasClass('button')).toBe(true);
+      expect(element.hasClass('button-positive')).toBe(true);
+      expect(element.hasClass('upload-btn')).toBe(true);
+    });
+
+    it('hides remove button', function() {
+      var element = deps.element.find('img');
+      expect(element.hasClass('ng-hide')).toBe(true);
+    });
+
+    describe('loading a file', function() {
+      var imageData = 'content://com.android.providers.media.documents/document/image%3A25650';
+
+      beforeEach(function() {
+        var getPictureQ = deps.$q.defer();
+        getPictureQ.resolve(imageData);
+        deps.$cordovaCamera.getPicture = jasmine.createSpy('getPicture').and.returnValue(getPictureQ.promise);
+
+        deps.parentScope.onInit = jasmine.createSpy('onInit');
+        deps.parentScope.setUploadData = jasmine.createSpy('setUploadData');
+        deps.parentScope.setProgress = jasmine.createSpy('setProgress');
+        deps.parentScope.setError = jasmine.createSpy('setError');
+        deps.parentScope.onRemoveIdentifier = jasmine.createSpy('onRemoveIdentifier');
+      });
+
+      describe('multiple modes', function() {
         beforeEach(function() {
-          var getPictureQ = deps.$q.defer();
-          getPictureQ.resolve(imageData);
+          deps.parentScope.modes = [
+            { name: 'gallery', label: 'Galería' },
+            { name: 'camera', options: { saveToPhotoAlbum: false } }
+          ];
 
-          deps.$cordovaCamera.getPicture = jasmine.createSpy('getPicture').and.returnValue(getPictureQ.promise);
+          deps.parentScope.modeSelectorOpts = {
+            title: 'Subir desde...',
+            cancelBtnLabel: 'Cancelar!'
+          };
 
-          deps.parentScope.onInit = jasmine.createSpy('onInit');
-          deps.parentScope.setUploadData = jasmine.createSpy('setUploadData');
-          deps.parentScope.setProgress = jasmine.createSpy('setProgress');
-          deps.parentScope.setError = jasmine.createSpy('setError');
-          deps.parentScope.onRemoveIdentifier = jasmine.createSpy('onRemoveIdentifier');
+          deps.$rootScope.$apply();
+
+          var showQ = deps.$q.defer();
+          showQ.resolve(2); // camera tab index
+          deps.$cordovaActionSheet.show = jasmine.createSpy('show').and.returnValue(showQ.promise);
+          deps.$cordovaFileTransfer.upload = jasmine.createSpy('upload').and.returnValue(deps.$q.defer().promise);
+
+          deps.element.isolateScope().onUploadButtonClick();
+          deps.$rootScope.$apply();
+        });
+
+        it('calls action sheet show method with correct params', function() {
+          var params = {
+            title: 'Subir desde...',
+            buttonLabels: ['Galería', 'Camera'],
+            addCancelButtonWithLabel: 'Cancelar!',
+            androidEnableCancelButton: true
+          };
+
+          expect(deps.$cordovaActionSheet.show).toHaveBeenCalledWith(params);
+        });
+
+        it('calls getPicture method with correct params', function() {
+          var params = {
+            destinationType: Camera.DestinationType.FILE_URI,
+            sourceType: Camera.PictureSourceType.CAMERA,
+            encodingType: Camera.EncodingType.JPEG,
+            saveToPhotoAlbum: false,
+            correctOrientation: true
+          };
+
+          expect(deps.$cordovaCamera.getPicture).toHaveBeenCalledWith(params);
+        });
+      });
+
+      describe('file mode', function() {
+        // TODO
+      });
+
+      describe('video mode', function() {
+        // TODO
+      });
+
+      describe('default mode (library)', function() {
+        beforeEach(function() {
+          deps.parentScope.modes = null;
+          deps.$rootScope.$apply();
         });
 
         describe('with successful response', function() {
@@ -39,30 +117,17 @@ ngDescribe({
             var successCallbackResponse = { response: stringResponse };
             var uploadQ = deps.$q.defer();
             uploadQ.resolve(successCallbackResponse);
-
             deps.$cordovaFileTransfer.upload = jasmine.createSpy('upload').and.returnValue(uploadQ.promise);
 
             deps.element.isolateScope().onUploadButtonClick();
             deps.$rootScope.$apply();
           });
 
-          it('change custom button label', function() {
-            var element = deps.element.find('button');
-            expect(element.text()).toBe('Upload please');
-          });
-
-          it('adds custom classes to button', function() {
-            var element = deps.element.find('button');
-            expect(element.hasClass('button')).toBe(true);
-            expect(element.hasClass('button-positive')).toBe(true);
-            expect(element.hasClass('upload-btn')).toBe(true);
-          });
-
           it('calls getPicture method with correct params', function() {
             var params = {
-              destinationType: 1,
-              sourceType: 1,
-              encodingType: 1
+              destinationType: Camera.DestinationType.FILE_URI,
+              sourceType: Camera.PictureSourceType.PHOTOLIBRARY,
+              encodingType: Camera.EncodingType.JPEG
             };
 
             expect(deps.$cordovaCamera.getPicture).toHaveBeenCalledWith(params);
@@ -130,7 +195,6 @@ ngDescribe({
             var errorCallbackResponse = { http_status: 500, exception: 'error :-(' };
             var uploadQ = deps.$q.defer();
             uploadQ.reject(errorCallbackResponse);
-
             deps.$cordovaFileTransfer.upload = jasmine.createSpy('upload').and.returnValue(uploadQ.promise);
 
             deps.element.isolateScope().onUploadButtonClick();
@@ -154,5 +218,6 @@ ngDescribe({
           });
         });
       });
-    }
+    });
+  }
 });
