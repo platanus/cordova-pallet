@@ -1,6 +1,6 @@
 {
   "name": "cordova-pallet",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "directive to perform asynchronous file uploads",
   "devDependencies": {
     "check-more-types": "1.8.1",
