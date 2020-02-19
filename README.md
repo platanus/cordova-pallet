@@ -2,6 +2,12 @@
 
 It's an angular directive to perform asynchronous file uploads from your mobile phone. It uses [ng-cordova](https://github.com/driftyco/ng-cordova) plugins such as: [$cordovaCamera](http://ngcordova.com/docs/plugins/camera) and [$cordovaFileTransfer](http://ngcordova.com/docs/plugins/fileTransfer) to achieve the goal. It was created to play with [Rails Pallet](https://github.com/platanus/rails_pallet) gem. Even though, it's not mandatory to use RoR or Rails Pallet. You can always mimic the server functionality.
 
+## Cordova Pallet is no longer maintained.
+
+- We will leave the Issues open as a discussion forum only.
+- We do not guarantee a response from us in the Issues.
+- We are no longer accepting pull requests.
+
 ## Installation
 
 First, you need to **add** the following plugins in your Cordova application:
